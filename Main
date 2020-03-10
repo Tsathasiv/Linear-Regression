@@ -1,0 +1,132 @@
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+
+
+def hypothesis(theta, X):
+    h = np.ones((X.shape[0],1))
+    for i in range(0,X.shape[0]):
+        x = np.concatenate((np.ones(1), np.array([X[i]])), axis = 0)
+        h[i] = float(np.matmul(theta, x))
+    h = h.reshape(X.shape[0])
+    return h
+
+def GD(theta, alpha, num_iters, h, X, y):
+    cost = np.ones(num_iters)
+    theta_0 = np.ones(num_iters)
+    theta_1 = np.ones(num_iters)
+    for i in range(0,num_iters):
+        theta[0] = theta[0] - (alpha/X.shape[0]) * sum(h - y)
+        theta[1] = theta[1] - (alpha/X.shape[0]) * sum((h - y) * X)
+        h = hypothesis(theta, X)
+        cost[i] = (1/X.shape[0]) * 0.5 * sum(np.square(h - y))
+        theta_0[i] = theta[0]
+        theta_1[i] = theta[1]
+    theta = theta.reshape(1,2)
+    return theta, theta_0, theta_1, cost
+
+def linear_regression_m(X, y, alpha, num_iters):
+    theta = np.zeros(2)
+    h = hypothesis(theta, X)
+    theta,theta_0,theta_1,cost= GD(theta,alpha,num_iters,h,X,y)
+    return theta, theta_0, theta_1, cost
+
+def gradient_descent(x,y, iterations, m,b):
+    m_curr = m
+    b_curr = b
+    n = len(x)
+    learning_rate = 0.0001
+
+    for i in range(iterations):
+        y_predicted = m_curr * x + b_curr
+        cost = (1/n) * sum([val**2 for val in (y-y_predicted)])
+        md = -(2/n)*sum(x*(y-y_predicted))
+        bd = -(2/n)*sum(y-y_predicted)
+        m_curr = m_curr - learning_rate * md
+        b_curr = b_curr - learning_rate * bd
+        it = i
+        plt.plot(it, cost,'ro', c='b', markersize = 2)
+        plt.draw()
+        plt.title('Error Graph')
+        plt.xlabel('Iterations')
+        plt.ylabel('Error')
+        plt.pause(0.000000000000001)
+
+    plt.show()
+def run():
+
+    data = pd.read_csv('student_marks.csv')
+    X = data['Midterm mark']
+    y = data['Final mark']
+
+    X = X.values.reshape(-1, 1)
+    y = y.values.reshape(-1, 1)
+
+    m = -0.5
+    b = 0
+    plt.scatter(X, y, c='b')
+    plt.plot([0, 100], [b, m * 100 + b], 'r')
+    plt.title("Initial Mark Graph m=-0.5, b=0")
+    plt.xlabel("Midterm Mark")
+    plt.ylabel("Final Mark")
+    plt.show()
+
+    X_train = data['Midterm mark']
+    y_train = data['Final mark']
+
+    gradient_descent(X_train, y_train, 100, -0.5, 0)
+
+    lin_reg = LinearRegression()
+
+    lin_reg_model = lin_reg.fit(X, y)
+
+    model_predict = lin_reg_model.predict(X)
+
+    plt.scatter(X, y, c='b')
+    plt.plot(X, model_predict, c='r')
+    plt.title("Linear Regression Model Graph")
+    plt.xlabel("Midterm Mark")
+    plt.ylabel("Final Mark")
+    plt.show()
+
+    log_message = f'The coef of the model is: {lin_reg_model.coef_}.'
+    print(log_message)
+
+    log_message = f'The intercept of the model is: {lin_reg_model.intercept_}.'
+    print(log_message)
+
+    X_train = data['Midterm mark']
+    y_train = data['Final mark']
+
+    theta, theta_0, theta_1, cost = linear_regression_m(X_train, y_train, 0.0001, 100)
+
+    print(theta)
+
+    training_predictions = hypothesis(theta, X_train)
+    scatter = plt.scatter(X_train, y_train,c='b')
+    regression_line = plt.plot(X_train, training_predictions, c='r')
+    plt.title("Mark Graph at 100 iterations")
+    plt.xlabel('Midterm Mark')
+    plt.ylabel('Final Mark')
+    plt.show()
+
+    gradient_descent(X_train,y_train, 100, 1.32199232, 8.01157814)
+
+    theta, theta_0, theta_1, cost = linear_regression_m(X_train, y_train,0.0001, 2000)
+    print(theta)
+
+    training_predictions = hypothesis(theta, X_train)
+    scatter = plt.scatter(X_train, y_train, c='b')
+    regression_line = plt.plot(X_train, training_predictions, c='r')
+    plt.title("Mark Graph at 2000 iterations")
+    plt.xlabel('Midterm Mark')
+    plt.ylabel('Final Mark')
+    plt.show()
+
+    gradient_descent(X_train,y_train,2000, 1.32199232, 8.01157814)
+
+
+if __name__ == '__main__':
+    run()
